@@ -1,48 +1,53 @@
-const express = require('express')
-const path = require('path')
-const boyParser = require('body-parser')
+const express = require("express");
+const path = require("path");
+const boyParser = require("body-parser");
 
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 5000;
 const MAX_NOTES = 100;
-const PATH_PREFIX = '/exampleapp';
+// const PATH_PREFIX = "/exampleapp";
+const PATH_PREFIX = "";
 
-const app = express()
+const app = express();
 
-app.use(boyParser())
+app.use(boyParser());
 
 const notes = [
-  {
-    content: 'HTML is easy',
-    date: new Date('2019-05-23T17:30:31.098Z'),
-  },
-  {
-    content: 'Browser can execute only Javascript',
-    date: new Date('2019-05-23T18:39:34.091Z'),
-  },
-  {
-    content: 'Most important methods of HTTP-protocol are GET and POST',
-    date: new Date('2019-05-23T19:20:14.298Z'),
-  },
-]
+	{
+		content: "HTML is easy",
+		date: new Date("2019-05-23T17:30:31.098Z"),
+	},
+	{
+		content: "Browser can execute only Javascript",
+		date: new Date("2019-05-23T18:39:34.091Z"),
+	},
+	{
+		content: "Most important methods of HTTP-protocol are GET and POST",
+		date: new Date("2019-05-23T19:20:14.298Z"),
+	},
+];
 
-const isValidNote = note => {
-  return typeof note === 'object' && typeof note.content === 'string' && !isNaN(new Date(note.date).getTime())
-}
+const isValidNote = (note) => {
+	return (
+		typeof note === "object" &&
+		typeof note.content === "string" &&
+		!isNaN(new Date(note.date).getTime())
+	);
+};
 
-const createNote = note => {
-  notes.push(note);
+const createNote = (note) => {
+	notes.push(note);
 
-  if (notes.length > MAX_NOTES) {
-    notes.shift()
-  }
-}
+	if (notes.length > MAX_NOTES) {
+		notes.shift();
+	}
+};
 
-const formatNote = note => {
-  return {
-    content: note.content.substring(0, 200),
-    date: new Date(note.date),
-  }
-}
+const formatNote = (note) => {
+	return {
+		content: note.content.substring(0, 200),
+		date: new Date(note.date),
+	};
+};
 
 const notes_page = `
 <!DOCTYPE html>
@@ -63,7 +68,7 @@ const notes_page = `
   </div>
 </body>
 </html>
-`
+`;
 
 const notes_spa = `
 <!DOCTYPE html>
@@ -84,10 +89,10 @@ const notes_spa = `
   </div>
 </body>
 </html>
-`
+`;
 
 const getFronPageHtml = (noteCount) => {
-  return(`
+	return `
 <!DOCTYPE html>
     <html>
       <head>
@@ -101,60 +106,62 @@ const getFronPageHtml = (noteCount) => {
         </div>
       </body>
     </html>
-`)
-} 
+`;
+};
 
 const router = express.Router();
 
-router.use(express.static(path.join(__dirname, 'public')))
+router.use(express.static(path.join(__dirname, "public")));
 
-router.get('/', (req, res) => {
-  const page = getFronPageHtml(notes.length)
-  res.send(page)
-})
+router.get("/", (req, res) => {
+	const page = getFronPageHtml(notes.length);
+	res.send(page);
+});
 
-router.get('/reset', (req, res) => {
-  notes.splice(0, notes.length)
-  res.status(201).send({ message: 'notes reset' })
-})
+router.get("/reset", (req, res) => {
+	notes.splice(0, notes.length);
+	res.status(201).send({ message: "notes reset" });
+});
 
-router.get('/notes', (req, res) => {
-  res.send(notes_page)
-})
+router.get("/notes", (req, res) => {
+	res.send(notes_page);
+});
 
-router.get('/spa', (req, res) => {
-  res.send(notes_spa)
-})
+router.get("/spa", (req, res) => {
+	res.send(notes_spa);
+});
 
-router.get('/data.json', (req, res) => {
-  res.json(notes)
-})
+router.get("/data.json", (req, res) => {
+	res.json(notes);
+});
 
-router.post('/new_note_spa', (req, res) => {
-  if (!isValidNote(req.body)) {
-    return res.send('invalid note').status(400)
-  }
+router.post("/new_note_spa", (req, res) => {
+	if (!isValidNote(req.body)) {
+		return res.send("invalid note").status(400);
+	}
 
-  createNote(formatNote(req.body))
+	createNote(formatNote(req.body));
 
-  res.status(201).send({ message: 'note created' })
-})
+	res.status(201).send({ message: "note created" });
+});
 
-router.post('/new_note', (req, res) => {
-  if (typeof req.body.note === 'string') {
-    createNote(formatNote({
-      content: req.body.note,
-      date: new Date()
-    }))
-  }
-  
-  res.redirect(`${PATH_PREFIX}/notes`)
-})
+router.post("/new_note", (req, res) => {
+	if (typeof req.body.note === "string") {
+		createNote(
+			formatNote({
+				content: req.body.note,
+				date: new Date(),
+			})
+		);
+	}
 
-if (process.env.NODE_ENV === 'development') {
-  app.use(PATH_PREFIX, router)
+	res.redirect(`${PATH_PREFIX}/notes`);
+});
+
+if (process.env.NODE_ENV === "development") {
+	app.use(PATH_PREFIX, router);
 } else {
-  app.use('/', router)
+	app.use("/", router);
 }
 
-app.listen(PORT, () => console.log(`Listening on ${PORT}`))
+app.listen(PORT, () => console.log(`Listening on ${PORT}`));
